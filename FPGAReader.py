@@ -21,7 +21,7 @@ class FPGAReader:
         baud = 9600
         bSize = 2**10
         if (pi):
-            return cls('/dev/ttyACM0', baud, bSize)
+            return cls('/dev/ttyUSB0', baud, bSize)
         else:
             #return cls('/dev/cu.usbmodem141101', baud, bSize)
             return cls('/dev/cu.SLAB_USBtoUART', baud, bSize)
