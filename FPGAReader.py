@@ -23,7 +23,8 @@ class FPGAReader:
         if (pi):
             return cls('/dev/ttyACM0', baud, bSize)
         else:
-            return cls('/dev/cu.usbmodem141101', baud, bSize)
+            #return cls('/dev/cu.usbmodem141101', baud, bSize)
+            return cls('/dev/cu.SLAB_USBtoUART', baud, bSize)
 
     def initBuffers(self):
         self.CSC = [0]*self.bufferSize
@@ -89,7 +90,7 @@ class FPGAReader:
             if (b >= 2**(7-i)):
                 result[i] = 1
                 b -= 2**(7-i)
-        return result           
+        return result
 
     def start(self):
         self.mustStop = False
@@ -159,10 +160,14 @@ class FPGAReader:
         ro0A = numpy.median(ro0Diff)
         ro1A = numpy.median(ro1Diff)
         clkA = numpy.median(clkDiff)
+        if (clkA == 0):
+            return (float('nan'), float('nan'), float('nan'), float('nan'), float('nan'))
         f0 = ro0A/clkA*100
         f1 = ro1A/clkA*100
         csc = self.__getValues(self.CSC, self.averageRange)
         cscA = int(numpy.median(csc))
+        if (cscA == 0):
+            return (0, abs(1/f0-1/f1)*1000000, f0, f1, float('nan'))
         return (cscA, abs(1/f0-1/f1)*1000000, f0, f1, f1/cscA)
 
     def getROSel(self):
@@ -194,4 +199,3 @@ class FPGAReader:
         ctrs = self.__getValues(self.CTR, self.averageRange)
         ctr = int(numpy.median(ctrs))
         return numpy.sign(ctr&64)
-            

@@ -1,4 +1,5 @@
 import pygame
+import math
 
 class LiveData:
 
@@ -55,6 +56,8 @@ class LiveData:
 
     @staticmethod
     def stringLength(value, size):
+        if (math.isnan(value)):
+            return '-'
         if (value%1 == 0):
             return str(value)
         s = str(value)

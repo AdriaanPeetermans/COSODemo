@@ -1,8 +1,9 @@
 import pygame
 import time
+import numpy
 
 class RandScreen:
-    
+
     def __init__(self, screen, FPGAReader, demoScreen):
         self.mode = 0
         self.counter = 0
@@ -37,6 +38,7 @@ class RandScreen:
     blockSize = 100 #           Number of new samples to use when a new histogram is drawn
     redrawSpeed = 5 #           Number of frames before a new histogram is drawn
     boundThick = 6 #            Thickness of ideal hist value bound
+    averageCells = 8 #          Number of histogram cells that are averaged togehter in the visualisation
 
     #Mode 2 (Bias):
     biasBlockSize = 100 #       Number of bytes used per bias prediction
@@ -142,7 +144,7 @@ class RandScreen:
         if (bit == 1):
             pygame.draw.rect(self.helperScreen, self.white, pygame.Rect(posX, posY, self.randomBitstreamPixelSize, self.randomBitstreamPixelSize))
         else:
-            pygame.draw.rect(self.helperScreen, self.black, pygame.Rect(posX, posY, self.randomBitstreamPixelSize, self.randomBitstreamPixelSize))           
+            pygame.draw.rect(self.helperScreen, self.black, pygame.Rect(posX, posY, self.randomBitstreamPixelSize, self.randomBitstreamPixelSize))
 
     def __initHist(self):
         self.hist = [0]*256
@@ -170,12 +172,12 @@ class RandScreen:
             screen.fill(self.white)
         if (drawBar):
             pygame.draw.rect(screen, self.orange, pygame.Rect(0,int(screen.get_height()/2-self.boundThick/2+0.5),screen.get_width(),self.boundThick))
-        for i in range(256):
-            x1 = int(i*self.histBarWidth+0.5)
-            x2 = int((i+1)*self.histBarWidth+0.5)
-            h = int(hist[i]*256/2*screen.get_height()+0.5)
+        for i in range(int(256/self.averageCells)):
+            x1 = int(i*self.averageCells*self.histBarWidth+0.5)
+            x2 = int((i+1)*self.averageCells*self.histBarWidth+0.5)
+            h = int(numpy.mean(hist[i*self.averageCells:(i+1)*self.averageCells])*256/2*screen.get_height()+0.5)
             pygame.draw.rect(screen, color, pygame.Rect(x1,screen.get_height()-h,x2-x1,h))
-            
+
     def __initBias(self):
         self.biasHist = [0]*self.biasBins
         self.numberBiasBlocks = 1
@@ -183,7 +185,7 @@ class RandScreen:
         bs = self.FPGAReader.popRands(self.biasBlockSize*8)
         e = sum(bs)/(self.biasBlockSize*8)
         self.biasHist[min(int(e*self.biasBins+0.5), self.biasBins-1)] += 1
-        
+
     def __addBias(self):
         scaledHist = self.biasHist
         for i in range(self.biasBins):

@@ -1,4 +1,5 @@
 import pygame
+import math
 
 class Graph:
 
@@ -101,14 +102,15 @@ class Graph:
         #CSCnt cursor:
         if (self.counter == 0):
             data = self.FPGAReader.getLiveData()
-            self.CSC = data[0]
+            if (not(math.isnan(data[0]))):
+                self.CSC = data[0]
         elif (self.counter == self.CSCRefresh-1):
             self.counter = -1
         self.counter += 1
         pygame.draw.rect(self.screen, self.orange, pygame.Rect(int(self.LeftImageMarg+self.CSC/200*self.GraphWidth-self.CSCCursorWidth/2+0.5),self.BotImageMarg+self.TopBorder,self.CSCCursorWidth,self.screen.get_height()-self.BotImageMarg-(self.BotImageMarg+self.TopBorder)))
         #LH:
         self.__drawLH()
-    
+
     def ProcessInput(self, events, keys):
         for event in events:
             if (event.type == pygame.MOUSEBUTTONDOWN):
